@@ -1,0 +1,1150 @@
+<title>拼豆熨烫标定测量</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; the pegboard diagram sits beside the pattern legend on wide screens. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --fg:#1b1e25; --muted:#5d6472; --line:#d9dde4;
+  --accent:#2f5bd3; --accent-soft:#e6ecfb; --go:#2e8a52; --nogo:#b5452f;
+  --board:#e9ecf1; --peg:#b9c0cc; --hole:#e9ecf1;
+  --f-display:"Space Grotesk","Noto Sans SC",system-ui,sans-serif;
+  --f-body:"Noto Sans SC",system-ui,-apple-system,"PingFang SC",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13161c; --surface:#1b1f27; --fg:#e7e9ee; --muted:#9aa2b1; --line:#2c323d;
+  --accent:#7c9cf0; --accent-soft:#222c45; --go:#5cc187; --nogo:#e58a72;
+  --board:#232833; --peg:#3d4553; --hole:#232833; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#13161c; --surface:#1b1f27; --fg:#e7e9ee; --muted:#9aa2b1; --line:#2c323d;
+  --accent:#7c9cf0; --accent-soft:#222c45; --go:#5cc187; --nogo:#e58a72;
+  --board:#232833; --peg:#3d4553; --hole:#232833; color-scheme:dark}
+
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.7}
+.wrap{max-width:960px;margin:0 auto;padding-block:40px 72px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:48px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.25;margin:0}
+h1{font-size:clamp(28px,5vw,40px);font-weight:700}
+h2{font-size:22px;font-weight:600;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+h2 .en{font-size:14px;font-weight:500;color:var(--muted);letter-spacing:.02em}
+h3{font-size:16px;font-weight:600}
+p{margin:0;max-width:68ch}
+section{display:flex;flex-direction:column;gap:16px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lede{color:var(--muted);font-size:16px}
+header{display:flex;flex-direction:column;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-mono);font-size:12px;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.en-sum{border-left:3px solid var(--accent);padding:4px 0 4px 14px;color:var(--muted);font-size:14px;max-width:68ch}
+
+.qs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.q .num{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+.q p{font-size:14px;color:var(--muted)}
+
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-display);font-weight:600;font-size:13px;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:none}
+.sym{font-family:var(--f-mono);font-size:13px;white-space:nowrap}
+.group td{background:var(--accent-soft);font-weight:700;font-family:var(--f-display);color:var(--fg)}
+.stage{font-family:var(--f-mono);font-size:12px;white-space:nowrap;color:var(--accent)}
+.blank td:not(:first-child){color:var(--line)}
+.rec td,.rec th{text-align:center;font-variant-numeric:tabular-nums}
+.rec td:first-child,.rec th:first-child{text-align:left}
+
+.boardgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:760px){.boardgrid{grid-template-columns:1fr}}
+.board{width:100%;max-width:520px;height:auto;display:block}
+.board-bg{fill:var(--board)} .peg{fill:var(--peg)} .hole{fill:var(--hole)}
+.bead{stroke:var(--line);stroke-width:.8}
+.blabel{font-family:var(--f-mono);font-size:10px;font-weight:500;fill:var(--muted)}
+.legend{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.legend li{display:grid;grid-template-columns:44px 1fr;gap:8px;font-size:14px}
+.legend b{font-family:var(--f-mono);font-weight:500;color:var(--accent)}
+.legend span{color:var(--muted)}
+
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.panel ul{margin:0;padding-left:18px;font-size:14px}
+.panel li+li{margin-top:4px}
+.go{border-top:3px solid var(--go)} .nogo{border-top:3px solid var(--nogo)}
+.go h3{color:var(--go)} .nogo h3{color:var(--nogo)}
+.note{font-size:13px;color:var(--muted)}
+.times{display:flex;flex-wrap:wrap;gap:8px}
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,3fr);gap:12px;align-items:stretch}
+.flow .s0{background:var(--accent);color:var(--bg);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.flow .s0 b{font-family:var(--f-display);font-size:18px}
+.flow .s0 span{font-size:13px;opacity:.9}
+.flow .arrow{align-self:center;font-family:var(--f-mono);color:var(--accent);font-size:13px;text-align:center}
+.flow .stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.flow .st{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.flow .st b{font-family:var(--f-display);font-size:14px}
+.flow .st span{font-size:13px;color:var(--muted)}
+@media (max-width:760px){.flow{grid-template-columns:1fr}.flow .arrow{transform:rotate(90deg)}.flow .stages{grid-template-columns:1fr}}
+.times span{font-family:var(--f-mono);font-size:13px;border:1px solid var(--line);border-radius:6px;padding:2px 10px;background:var(--surface)}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Stage 0 · Calibration · todo f</div>
+  <h1>拼豆熨烫标定测量</h1>
+  <p class="lede">搭建 simulation 之前，需要先用实物测出熨烫会让豆子发生哪些变化、变化多大。这一页列出要测的数据、测试板怎么摆、怎么记录，以及测完以后怎么判断下一步。</p>
+  <div class="chips"><span class="chip">单位：mm · s</span><span class="chip">一个品牌 · 一个熨斗档位</span><span class="chip">只变熨烫时间</span></div>
+  <p class="en-sum">English summary: Before building the simulation, we iron small calibration boards at several durations and measure bead size, hole closure, bonding, shrinkage, warping and color change. These numbers calibrate Stage 2 (material-aware adjustment) and Stage 3 (ironed-result prediction), and decide whether simple adjacency rules are enough.</p>
+</header>
+
+<section>
+  <h2>Stage 0 是什么 <span class="en">What Stage 0 Is</span></h2>
+  <p>Stage 0 是写任何代码之前做的<b>实物标定实验</b>：把设计好的小图案摆在拼豆板上，用不同时间熨烫，测量熨烫前后的变化。它不属于 pipeline 本身，而是给 pipeline 提供数据。现有的工具和熨烫指南只定性地说"会缩小、孔会闭合、会翘曲"，没有任何数值。</p>
+  <div class="flow" aria-label="Stage 0 为 Stage 1 到 3 提供参数">
+    <div class="s0"><b>Stage 0</b><span>实物标定：测出熨烫带来的变化</span></div>
+    <div class="arrow">参数 →</div>
+    <div class="stages">
+      <div class="st"><b>Stage 1 · Layout</b><span>按大小和颜色生成拼豆布局</span></div>
+      <div class="st"><b>Stage 2 · 材质调整</b><span>处理晕染和断连</span></div>
+      <div class="st"><b>Stage 3 · 熨后预测</b><span>预测熨烫后的样子，可反推调整 layout</span></div>
+    </div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>后面的 stage</th><th>需要 Stage 0 提供什么</th><th>没有这些数据会怎样</th></tr></thead>
+    <tbody>
+      <tr><td class="stage">Stage 1</td><td>每种豆子熨烫后的真实颜色</td><td>配色只能用色卡标称值，成品颜色可能和预期不一样</td></tr>
+      <tr><td class="stage">Stage 2</td><td>哪些连接一定粘上、哪些会断，晕染有多宽</td><td>连通性规则只能凭感觉写，比如不知道对角相邻算不算连通</td></tr>
+      <tr><td class="stage">Stage 3</td><td>膨胀多少、孔闭合多少、整体缩多少</td><td>熔合模型没有参数，"熨后效果"没有依据</td></tr>
+    </tbody>
+  </table></div>
+  <p>Stage 0 还要回答一个决定项目方向的问题：<b>熨烫后的结果能不能用简单规则解释？</b>能的话，Stage 2 用图论规则、Stage 3 用查表就够了；不能的话，就需要标定一个真正的熔合模型，这也是项目最有 novelty 的地方。判断标准见页面下方的 Go / No-Go。</p>
+  <p class="en-sum">Stage 0 runs before any code. It supplies the parameters for Stages 1–3 and decides whether simple adjacency rules are enough or a calibrated fusion model is needed.</p>
+</section>
+
+<section>
+  <h2>三个核心问题 <span class="en">Core Questions</span></h2>
+  <div class="qs">
+    <div class="q"><span class="num">Q1 · 尺寸</span><h3>一颗豆子熨烫前后各多少 mm？</h3><p>外径、孔径、高度，在每个熨烫时间下各测一次。</p></div>
+    <div class="q"><span class="num">Q2 · 粘合</span><h3>两颗豆子熨多久会粘在一起？</h3><p>边相邻、对角相邻、隔一格，分别在 5 s、10 s、15 s… 记录粘上没有。</p></div>
+    <div class="q"><span class="num">Q3 · 闭孔</span><h3>豆子多久变成无孔豆？</h3><p>孤立的豆子和被 2、3、4 颗豆包围的豆子，闭孔时间可能不同。</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>测量清单 <span class="en">What to Measure</span></h2>
+  <p class="note">每一项都对应 pipeline 里会用到它的 stage。熨烫前的数值也要测，不要直接用厂家标称值。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>测量项</th><th>符号 / 单位</th><th>测试图案</th><th>怎么测</th><th>用在</th></tr></thead>
+    <tbody>
+      <tr class="group"><td colspan="5">A. 单颗豆子的尺寸（Q1）</td></tr>
+      <tr><td>外径</td><td class="sym">D₀ → D(t) mm</td><td>P1、P6</td><td>扫描图上量取，游标卡尺抽查</td><td class="stage">Stage 3</td></tr>
+      <tr><td>孔径（闭合记 0）</td><td class="sym">d₀ → d(t) mm</td><td>P1、P6</td><td>扫描图上量取</td><td class="stage">Stage 3</td></tr>
+      <tr><td>高度（被压扁的程度）</td><td class="sym">h₀ → h(t) mm</td><td>P1</td><td>游标卡尺</td><td class="stage">Stage 3</td></tr>
+
+      <tr class="group"><td colspan="5">B. 粘合（Q2）</td></tr>
+      <tr><td>边相邻是否粘上</td><td class="sym">粘 / 未粘</td><td>P2</td><td>冷却后轻轻提起其中一颗</td><td class="stage">Stage 2</td></tr>
+      <tr><td>对角相邻是否粘上</td><td class="sym">粘 / 未粘</td><td>P3、P7</td><td>同上；P7 看整个 X 形能否一起提起</td><td class="stage">Stage 2</td></tr>
+      <tr><td>隔一格是否被膨胀"桥接"</td><td class="sym">粘 / 未粘</td><td>P10</td><td>同上</td><td class="stage">Stage 2</td></tr>
+      <tr><td>首次粘合时间</td><td class="sym">t_bond s</td><td>P2、P3</td><td>从各时间档结果中读出最短的粘合时间</td><td class="stage">Stage 2/3</td></tr>
+      <tr><td>接触宽度</td><td class="sym">c(t) mm</td><td>P2</td><td>两颗豆熔合处的宽度，扫描图上量取</td><td class="stage">Stage 3</td></tr>
+
+      <tr class="group"><td colspan="5">C. 闭孔（Q3）</td></tr>
+      <tr><td>闭孔时间（按邻居数）</td><td class="sym">t_close(n) s</td><td>P1（0 邻）、P6 角（2 邻）、边（3 邻）、中心（4 邻）</td><td>记录每个时间档下孔是否完全闭合</td><td class="stage">Stage 3</td></tr>
+      <tr><td>孔收缩比例</td><td class="sym">d(t) / d₀</td><td>同上</td><td>由 A 组数据计算</td><td class="stage">Stage 3</td></tr>
+
+      <tr class="group"><td colspan="5">D. 整体结构</td></tr>
+      <tr><td>整体收缩</td><td class="sym">L₀ → L(t) mm</td><td>P6 边长、P4 长 10 的直线</td><td>钢尺或扫描图</td><td class="stage">Stage 1/3</td></tr>
+      <tr><td>细颈能否拿起</td><td class="sym">通过 / 断</td><td>P4（1 格宽，长 3、5、10）、P5（2 格宽）</td><td>捏住一端水平提起 3 秒</td><td class="stage">Stage 2</td></tr>
+      <tr><td>翘曲</td><td class="sym">w_max mm</td><td>P6、P5</td><td>放在平面上，量最高翘起点</td><td class="stage">Stage 3</td></tr>
+
+      <tr class="group"><td colspan="5">E. 颜色</td></tr>
+      <tr><td>每种颜色熨烫前后的颜色</td><td class="sym">Lab₀ → Lab(t)</td><td>P9 色卡条</td><td>同一台扫描仪、同一设置扫描后取平均</td><td class="stage">Stage 1</td></tr>
+      <tr><td>交界晕染宽度</td><td class="sym">b(t) mm</td><td>P8 黑/白、红/白</td><td>沿垂直于交界的方向取颜色曲线，量过渡区宽度</td><td class="stage">Stage 2</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>测试板布局 <span class="en">Calibration Board</span></h2>
+  <p>所有测试图案摆在同一块 29×29 方形板上，图案之间至少空 2 格，避免互相粘连。每个时间档熨一整块板。</p>
+  <div class="boardgrid">
+    <svg viewBox="0 0 600 600" role="img" aria-label="29×29 拼豆测试板布局" class="board">
+<rect x="0" y="0" width="600" height="600" rx="14" class="board-bg"/>
+<circle cx="20.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="20.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="40.0" r="8.2" fill="#e8823a" class="bead"/><circle cx="40.0" cy="40.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="40.0" r="8.2" fill="#e8823a" class="bead"/><circle cx="100.0" cy="40.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="40.0" r="8.2" fill="#e8823a" class="bead"/><circle cx="120.0" cy="40.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="40.0" r="8.2" fill="#e8823a" class="bead"/><circle cx="180.0" cy="40.0" r="3.4" class="hole"/>
+<circle cx="200.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="40.0" r="8.2" fill="#2f5bd3" class="bead"/><circle cx="260.0" cy="40.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="40.0" r="8.2" fill="#2f5bd3" class="bead"/><circle cx="300.0" cy="40.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="40.0" r="8.2" fill="#e8823a" class="bead"/><circle cx="400.0" cy="40.0" r="3.4" class="hole"/>
+<circle cx="420.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="40.0" r="8.2" fill="#e8823a" class="bead"/><circle cx="440.0" cy="40.0" r="3.4" class="hole"/>
+<circle cx="460.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="40.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="60.0" r="8.2" fill="#e8823a" class="bead"/><circle cx="200.0" cy="60.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="60.0" r="8.2" fill="#2f5bd3" class="bead"/><circle cx="280.0" cy="60.0" r="3.4" class="hole"/>
+<circle cx="300.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="60.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="80.0" r="8.2" fill="#2f5bd3" class="bead"/><circle cx="260.0" cy="80.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="80.0" r="8.2" fill="#2f5bd3" class="bead"/><circle cx="300.0" cy="80.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="80.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="100.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="120.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="140.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="40.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="140.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="60.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="140.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="80.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="140.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="100.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="140.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="120.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="180.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="200.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="200.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="220.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="240.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="240.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="260.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="260.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="280.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="300.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="300.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="320.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="340.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="340.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="360.0" cy="140.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="360.0" cy="140.0" r="3.4" class="hole"/>
+<circle cx="380.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="140.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="160.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="40.0" cy="160.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="160.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="60.0" cy="160.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="160.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="80.0" cy="160.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="160.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="100.0" cy="160.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="160.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="120.0" cy="160.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="160.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="180.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="40.0" cy="180.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="180.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="60.0" cy="180.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="180.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="80.0" cy="180.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="180.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="100.0" cy="180.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="180.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="120.0" cy="180.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="180.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="200.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="40.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="200.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="60.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="200.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="80.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="200.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="100.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="200.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="120.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="200.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="180.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="200.0" cy="200.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="200.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="200.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="220.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="240.0" cy="200.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="240.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="260.0" cy="200.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="260.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="200.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="320.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="340.0" cy="200.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="340.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="360.0" cy="200.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="360.0" cy="200.0" r="3.4" class="hole"/>
+<circle cx="380.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="200.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="220.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="40.0" cy="220.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="220.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="60.0" cy="220.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="220.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="80.0" cy="220.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="220.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="100.0" cy="220.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="220.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="120.0" cy="220.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="220.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="240.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="180.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="200.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="200.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="220.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="240.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="240.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="260.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="260.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="280.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="300.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="300.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="320.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="340.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="340.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="360.0" cy="260.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="360.0" cy="260.0" r="3.4" class="hole"/>
+<circle cx="380.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="260.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="180.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="200.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="200.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="220.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="240.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="240.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="260.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="260.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="280.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="300.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="300.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="320.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="340.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="340.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="360.0" cy="280.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="360.0" cy="280.0" r="3.4" class="hole"/>
+<circle cx="380.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="280.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="300.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="320.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="340.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="40.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="340.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="60.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="340.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="80.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="340.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="100.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="340.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="120.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="340.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="140.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="160.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="340.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="200.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="340.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="220.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="240.0" cy="340.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="240.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="260.0" cy="340.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="260.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="340.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="280.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="300.0" cy="340.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="300.0" cy="340.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="340.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="360.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="40.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="360.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="60.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="360.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="80.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="360.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="100.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="360.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="120.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="360.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="140.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="160.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="360.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="200.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="360.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="220.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="240.0" cy="360.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="240.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="260.0" cy="360.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="260.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="360.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="280.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="300.0" cy="360.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="300.0" cy="360.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="360.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="380.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="40.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="380.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="60.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="380.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="80.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="380.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="100.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="380.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="120.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="380.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="140.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="160.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="380.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="200.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="380.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="220.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="240.0" cy="380.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="240.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="260.0" cy="380.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="260.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="380.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="280.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="300.0" cy="380.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="300.0" cy="380.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="380.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="400.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="40.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="400.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="60.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="400.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="80.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="400.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="100.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="120.0" cy="400.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="120.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="400.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="140.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="160.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="400.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="200.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="400.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="220.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="240.0" cy="400.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="240.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="260.0" cy="400.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="260.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="280.0" cy="400.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="280.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="300.0" cy="400.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="300.0" cy="400.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="400.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="420.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="440.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="460.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="480.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="40.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="60.0" cy="480.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="60.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="80.0" cy="480.0" r="8.2" fill="#1d1f24" class="bead"/><circle cx="80.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="100.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="480.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="120.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="140.0" cy="480.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="140.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="160.0" cy="480.0" r="8.2" fill="#f7f7f4" class="bead"/><circle cx="160.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="180.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="480.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="200.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="220.0" cy="480.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="220.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="240.0" cy="480.0" r="8.2" fill="#d23a32" class="bead"/><circle cx="240.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="260.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="480.0" r="8.2" fill="#2f5bd3" class="bead"/><circle cx="280.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="300.0" cy="480.0" r="8.2" fill="#2f5bd3" class="bead"/><circle cx="300.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="320.0" cy="480.0" r="8.2" fill="#2f5bd3" class="bead"/><circle cx="320.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="340.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="480.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="360.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="380.0" cy="480.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="380.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="400.0" cy="480.0" r="8.2" fill="#f2c230" class="bead"/><circle cx="400.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="420.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="480.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="440.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="460.0" cy="480.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="460.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="480.0" cy="480.0" r="8.2" fill="#2e9b57" class="bead"/><circle cx="480.0" cy="480.0" r="3.4" class="hole"/>
+<circle cx="500.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="480.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="500.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="520.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="540.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="560.0" r="1.6" class="peg"/>
+<circle cx="20.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="40.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="60.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="80.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="100.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="120.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="140.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="160.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="180.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="200.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="220.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="240.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="260.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="280.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="300.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="320.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="340.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="360.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="380.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="400.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="420.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="440.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="460.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="480.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="500.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="520.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="540.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="560.0" cy="580.0" r="1.6" class="peg"/>
+<circle cx="580.0" cy="580.0" r="1.6" class="peg"/>
+<text x="32" y="24.4" class="blabel">P1</text>
+<text x="92" y="24.4" class="blabel">P2</text>
+<text x="172" y="24.4" class="blabel">P3</text>
+<text x="252" y="24.4" class="blabel">P7</text>
+<text x="392" y="24.4" class="blabel">P10</text>
+<text x="32" y="124.4" class="blabel">P6</text>
+<text x="172" y="124.4" class="blabel">P4</text>
+<text x="172" y="244.4" class="blabel">P5</text>
+<text x="32" y="324.4" class="blabel">P8</text>
+<text x="32" y="464.4" class="blabel">P9</text>
+</svg>
+    <ul class="legend">
+      <li><b>P1</b><span>单颗孤立豆：没有邻居时的膨胀和闭孔</span></li>
+      <li><b>P2</b><span>两颗边相邻：最基本的粘合</span></li>
+      <li><b>P3</b><span>两颗对角相邻：膨胀后对角能不能粘上</span></li>
+      <li><b>P4</b><span>1 格宽直线，长 10、5、3：细颈强度</span></li>
+      <li><b>P5</b><span>2 格宽直线，长 10：和 P4 对比加宽的效果</span></li>
+      <li><b>P6</b><span>5×5 实心块：角、边、中心的邻居数差异，整体收缩</span></li>
+      <li><b>P7</b><span>X 形，只有对角接触：全靠对角的结构能否提起</span></li>
+      <li><b>P8</b><span>双色交界（黑/白、红/白）：晕染</span></li>
+      <li><b>P9</b><span>色卡条，每色 3 颗：颜色变化</span></li>
+      <li><b>P10</b><span>隔一格的两颗豆：膨胀能否跨过空格</span></li>
+    </ul>
+  </div>
+  <p class="note">图中颜色只是示意，实际用你们买到的颜色。P8 和 P9 需要真实颜色，其余图案可以用同一种颜色，方便量尺寸。</p>
+</section>
+
+<section>
+  <h2>实验设置 <span class="en">Protocol</span></h2>
+  <div class="cols">
+    <div class="panel">
+      <h3>固定不变</h3>
+      <ul>
+        <li>豆子品牌和尺寸（只用一个品牌）</li>
+        <li>熨斗档位；有红外测温枪的话记录底板实际温度</li>
+        <li>熨烫纸、垫板</li>
+        <li>手法：只靠熨斗自重，轻轻画圈</li>
+        <li>完全冷却后再测量</li>
+        <li>先只熨单面</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>唯一变量：熨烫时间</h3>
+      <p class="note">计时 = 熨斗在整块板上画圈移动的总时间。</p>
+      <div class="times"><span>5 s</span><span>10 s</span><span>15 s</span><span>20 s</span><span>30 s</span></div>
+      <p class="note">这组数值是初始猜测。先做一块预实验板，找到"刚开始粘"和"孔完全闭合"的大致时间，再在这个范围内平均取 5 档。</p>
+    </div>
+    <div class="panel">
+      <h3>数量</h3>
+      <ul>
+        <li>5 个时间档 × 每档 3 块 = <b>15 块板</b></li>
+        <li>熨烫不可逆，每档必须用新板，不能在同一块板上分段继续熨</li>
+        <li>第二轮（可选）：双面熨烫、换一个品牌</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>记录表 <span class="en">Record Sheets</span></h2>
+  <p>每块板拍两张照片：熨烫前一张，熨烫后一张，都要俯拍并在旁边放尺子。文件命名建议用 <span class="sym">t10_rep2_before.jpg</span> 这种格式。</p>
+
+  <h3>表 1：单颗豆尺寸与闭孔（每块板一份）</h3>
+  <div class="tbl"><table class="rec">
+    <thead><tr><th>位置</th><th>邻居数</th><th>D₀</th><th>D(t)</th><th>d₀</th><th>d(t)</th><th>h₀</th><th>h(t)</th><th>孔闭合？</th></tr></thead>
+    <tbody>
+      <tr class="blank"><td>P1 孤立</td><td>0</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P6 角</td><td>2</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P6 边</td><td>3</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P6 中心</td><td>4</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>表 2：粘合与结构（所有板汇总）</h3>
+  <div class="tbl"><table class="rec">
+    <thead><tr><th>测试</th><th>5 s</th><th>10 s</th><th>15 s</th><th>20 s</th><th>30 s</th></tr></thead>
+    <tbody>
+      <tr class="blank"><td>P2 边相邻粘上？</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P3 对角粘上？</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P10 隔一格粘上？</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P7 X 形能提起？</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P4 长 3 能提起？</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P4 长 5 能提起？</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P4 长 10 能提起？</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P5 2 格宽能提起？</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P6 边长 L(t) mm</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>P8 晕染宽度 b(t) mm</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="blank"><td>最大翘曲 w_max mm</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">每格填 3 块重复板的结果，例如 "3/3" 表示 3 块都粘上，数值则填平均值 ± 范围。</p>
+</section>
+
+<section>
+  <h2>测完以后怎么判断 <span class="en">Go / No-Go</span></h2>
+  <div class="cols">
+    <div class="panel nogo">
+      <h3>简单规则就够</h3>
+      <ul>
+        <li>边相邻过了某个时间就一定粘上</li>
+        <li>对角永远粘不上，隔一格也粘不上</li>
+        <li>闭孔时间和邻居数基本无关</li>
+        <li>细颈只要边相邻就能拿起，跟长度无关</li>
+      </ul>
+      <p class="note">这时 Stage 2 用连通性规则就能做，Stage 3 可以简化成查表。</p>
+    </div>
+    <div class="panel go">
+      <h3>需要标定的熔合模型</h3>
+      <ul>
+        <li>对角在某个时间之后开始粘上</li>
+        <li>闭孔明显依赖邻居数</li>
+        <li>同样是边相邻，细颈长了就会断</li>
+        <li>晕染宽度随时间明显变化</li>
+      </ul>
+      <p class="note">这些都是"图结构相同、物理结果不同"的情况（Legolization 的论点），说明需要完整的 Stage 2 和 Stage 3。</p>
+    </div>
+  </div>
+  <p class="en-sum">If bonding, hole closure or neck strength depend on time, neighbor count or length beyond a simple adjacency rule, a calibrated fusion model is justified.</p>
+</section>
+
+<section>
+  <h2>器材 <span class="en">Equipment</span></h2>
+  <div class="cols">
+    <div class="panel"><h3>必需</h3><ul>
+      <li>一个品牌的豆子：黑、白、红，再加 3 种常用色</li>
+      <li>2–3 块 29×29 方形板（可重复使用）</li>
+      <li>熨斗、熨烫纸</li>
+      <li>游标卡尺、钢尺、计时器</li>
+      <li>平板扫描仪（600 dpi），或手机加三脚架俯拍</li>
+    </ul></div>
+    <div class="panel"><h3>可选</h3><ul>
+      <li>红外测温枪：记录熨斗底板实际温度</li>
+      <li>扫描一张熨烫纸的纹理，给 Stage 3 的渲染器叠加用</li>
+    </ul></div>
+  </div>
+</section>
+</div>
